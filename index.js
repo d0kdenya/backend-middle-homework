@@ -1,35 +1,28 @@
 #!/usr/bin/env node
-const readline = require('readline')
 const fs = require('fs')
-const {
-  stdin: input,
-  stdout: output
-} = require('process')
 
-const rl = readline.createInterface({ input, output })
-
-const randomNum = () => {
-  return Math.floor(Math.random() * 2 + 1)
-}
+let logPath
+let fileContent
+let winCount = 0
+let loseCount = 0
 
 if (!process.argv[2]) {
-  console.log('Имя файла для логирования результатов каждой партии не задано!')
+  logPath = 'logs.txt'
 } else {
-  const fileName = process.argv[2]
-  console.log(`Угадайте случайное число (1 или 2):`)
-  rl.on('line', answer => {
-    const num = randomNum()
-    if (Number(answer) === num) {
-      console.log(`Отгадано число ${ num }!`)
-      fs.appendFile(fileName, `Загадано число: ${ num } - WIN\n`, function(error) {
-        if (error) throw error;
-      })
-      rl.close()
+  logPath = process.argv[2]
+}
+fs.readFile(logPath, 'utf8', function (error, data) {
+  if (error) throw error
+  fileContent = data.split('\n')
+
+  fileContent.forEach(str => {
+    if (str.substring(str.lastIndexOf(' ')).trim() === 'LOSE') {
+      loseCount++;
     } else {
-      console.log('Не угадал!\n\nУгадайте случайное число (1 или 2):')
-      fs.appendFile(fileName, `Загадано число: ${ num } - LOSE\n`, function(error) {
-        if (error) throw error;
-      })
+      winCount++;
     }
   })
-}
+  console.log(`Общее количество партий: ${ fileContent.length }`)
+  console.log(`Количество выигранных / проигранных партий: ${ winCount } / ${ loseCount }`)
+  console.log(`Процентное соотношение выигранных партий: ${ (winCount / fileContent.length) }`)
+})
