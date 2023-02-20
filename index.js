@@ -1,28 +1,34 @@
 #!/usr/bin/env node
-const fs = require('fs')
+require('dotenv').config()
 
-let logPath
-let fileContent
-let winCount = 0
-let loseCount = 0
+const http = require('http')
+const myAPIKEY = process.env.myAPIKEY;
+let country = process.argv[2];
 
-if (!process.argv[2]) {
-  logPath = 'logs.txt'
+if (process.argv.length === 2) {
+  country = 'Moscow'
 } else {
-  logPath = process.argv[2]
+  for (let i = 2; i < process.argv.length; i++) {
+    country += '%20' + process.argv[i]
+  }
 }
-fs.readFile(logPath, 'utf8', function (error, data) {
-  if (error) throw error
-  fileContent = data.split('\n')
+const url = `http://api.weatherstack.com/current?access_key=${ myAPIKEY }&query=${ country }`
 
-  fileContent.forEach(str => {
-    if (str.substring(str.lastIndexOf(' ')).trim() === 'LOSE') {
-      loseCount++;
-    } else {
-      winCount++;
-    }
+http.get(url, res => {
+  const { statusCode } = res
+  if (statusCode !== 200) {
+    console.log(`statusCode: ${ statusCode }`)
+    return 0
+  }
+  res.setEncoding('utf8')
+
+  let rowData = ''
+
+  res.on('data', chunk => rowData += chunk)
+  res.on('end', () => {
+    let parseData = JSON.parse(rowData)
+    console.log(parseData)
   })
-  console.log(`Общее количество партий: ${ fileContent.length }`)
-  console.log(`Количество выигранных / проигранных партий: ${ winCount } / ${ loseCount }`)
-  console.log(`Процентное соотношение выигранных партий: ${ (winCount / fileContent.length) }`)
+}).on('error', err => {
+  console.log(err)
 })
