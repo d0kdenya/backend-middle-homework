@@ -1,7 +1,5 @@
-module.exports = (req, res) => {
-  res.status(404)
-  res.json({
-    'errCode': 404,
-    'errMsg': 'Страница не найдена!'
+module.exports = ((req, res) => {
+  res.render('errors/404', {
+    title: '404'
   })
-}
+})
