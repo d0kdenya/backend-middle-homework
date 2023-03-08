@@ -1,0 +1,99 @@
+1) Загрузите образ busybox последней версии:
+PS D:\dz\backend-middle-homework> docker pull busybox
+Using default tag: latest
+latest: Pulling from library/busybox
+Digest: sha256:c118f538365369207c12e5794c3cbfb7b042d950af590ae6c287ede74f29b7d4
+Status: Image is up to date for busybox:latest
+docker.io/library/busybox:latest
+
+PS D:\dz\backend-middle-homework> docker images
+REPOSITORY   TAG       IMAGE ID       CREATED        SIZE
+busybox      latest    bab98d58e29e   45 hours ago   4.86MB
+alpine       latest    b2aa39c304c2   3 weeks ago    7.05MB
+postgres     latest    4c6b3cc10e6b   3 months ago   379MB
+
+2) Запустите новый контейнер busybox с командой ping сайта netology.ru, и количеством пингов 7, поименуйте контейнер pinger:
+PS D:\dz\backend-middle-homework> docker run --name pinger -it busybox ping -c 7 netology.ru
+PING netology.ru (188.114.98.224): 56 data bytes
+64 bytes from 188.114.98.224: seq=0 ttl=37 time=30.827 ms
+64 bytes from 188.114.98.224: seq=1 ttl=37 time=23.169 ms
+64 bytes from 188.114.98.224: seq=2 ttl=37 time=23.471 ms
+64 bytes from 188.114.98.224: seq=3 ttl=37 time=23.692 ms
+64 bytes from 188.114.98.224: seq=4 ttl=37 time=23.272 ms
+64 bytes from 188.114.98.224: seq=5 ttl=37 time=23.139 ms
+64 bytes from 188.114.98.224: seq=6 ttl=37 time=23.431 ms
+
+--- netology.ru ping statistics ---
+7 packets transmitted, 7 packets received, 0% packet loss
+round-trip min/avg/max = 23.139/24.428/30.827 ms
+
+3) Выведите на список всех контейнеров - запущенных и остановленных:
+PS D:\dz\backend-middle-homework> docker ps -a
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS                      PORTS     NAMES
+f2c8848fc538   busybox   "ping -c 7 netology.…"   45 seconds ago   Exited (0) 37 seconds ago             pinger
+
+4) Выведите на экран логи контейнера с именем pinger:
+PS D:\dz\backend-middle-homework> docker logs pinger
+PING netology.ru (188.114.98.224): 56 data bytes
+64 bytes from 188.114.98.224: seq=0 ttl=37 time=30.827 ms
+64 bytes from 188.114.98.224: seq=1 ttl=37 time=23.169 ms
+64 bytes from 188.114.98.224: seq=2 ttl=37 time=23.471 ms
+64 bytes from 188.114.98.224: seq=3 ttl=37 time=23.692 ms
+64 bytes from 188.114.98.224: seq=4 ttl=37 time=23.272 ms
+64 bytes from 188.114.98.224: seq=5 ttl=37 time=23.139 ms
+64 bytes from 188.114.98.224: seq=6 ttl=37 time=23.431 ms
+
+--- netology.ru ping statistics ---
+7 packets transmitted, 7 packets received, 0% packet loss
+round-trip min/avg/max = 23.139/24.428/30.827 ms
+
+
+5) Запустите второй раз контейнера с именем pinger:
+PS D:\dz\backend-middle-homework> docker run --name pinger -it busybox ping -c 7 netology.ru
+docker: Error response from daemon: Conflict. The container name "/pinger" is already in use by container "f2c8848fc538fefe1708a6e25ccd7550d5bdc9d69a5ea
+c8378f48e0d137b6058". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.
+PS D:\dz\backend-middle-homework>
+
+6) Выведите на список всех контейнеров - запущенных и остановленных:
+PS D:\dz\backend-middle-homework> docker ps -a
+CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS                     PORTS     NAMES
+f2c8848fc538   busybox   "ping -c 7 netology.…"   4 minutes ago   Exited (0) 4 minutes ago             pinger
+
+7) Выведите на экран логи контейнера с именем pinger:
+PS D:\dz\backend-middle-homework> docker logs pinger
+PING netology.ru (188.114.98.224): 56 data bytes
+64 bytes from 188.114.98.224: seq=0 ttl=37 time=30.827 ms
+64 bytes from 188.114.98.224: seq=1 ttl=37 time=23.169 ms
+64 bytes from 188.114.98.224: seq=2 ttl=37 time=23.471 ms
+64 bytes from 188.114.98.224: seq=3 ttl=37 time=23.692 ms
+64 bytes from 188.114.98.224: seq=4 ttl=37 time=23.272 ms
+64 bytes from 188.114.98.224: seq=5 ttl=37 time=23.139 ms
+64 bytes from 188.114.98.224: seq=6 ttl=37 time=23.431 ms
+
+--- netology.ru ping statistics ---
+7 packets transmitted, 7 packets received, 0% packet loss
+round-trip min/avg/max = 23.139/24.428/30.827 ms
+
+8) Определите по логам общее количество запусков команды ping и какое общее количество отправленых запросов:
+7 packets transmitted, 7 packets received, 0% packet loss
+7 пакетов отправлено, 7 пакетов получено
+
+9) Удалите контейнер с именем pinger:
+PS D:\dz\backend-middle-homework> docker rm -f pinger
+pinger
+
+PS D:\dz\backend-middle-homework> docker ps -a
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+
+10) Удалите образ busybox:
+PS D:\dz\backend-middle-homework> docker rmi busybox
+Untagged: busybox:latest
+Untagged: busybox@sha256:c118f538365369207c12e5794c3cbfb7b042d950af590ae6c287ede74f29b7d4
+Deleted: sha256:bab98d58e29e4eb5744a69057a7b3d6ce99b19363a0e52c40301a5db43abf83c
+Deleted: sha256:427701cb9c9623cab51dcec9cfd66d7a88d189a14961120f4b2c62ce2e439b9d
+
+PS D:\dz\backend-middle-homework> docker images
+REPOSITORY   TAG       IMAGE ID       CREATED        SIZE
+alpine       latest    b2aa39c304c2   3 weeks ago    7.05MB
+postgres     latest    4c6b3cc10e6b   3 months ago   379MB
