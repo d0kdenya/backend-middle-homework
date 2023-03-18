@@ -1,113 +1,67 @@
 const express = require('express')
-const uploadMiddleware = require('../middlewares/uploadMiddleware')
-const path = require('path')
-const { v4: uuid } = require('uuid')
 const router = express.Router()
+const Book = require('../models/book')
 
-class Book {
-  constructor(title = '', description = '', authors = '', favorite = '', fileCover = '', fileName = '', fileBook = '', id = uuid()) {
-    this.id = id
-    this.title = title
-    this.description = description
-    this.authors = authors
-    this.favorite = favorite
-    this.fileCover = fileCover
-    this.fileName = fileName
-    this.fileBook = fileBook
+router.get('/', async (req, res) => {
+  try {
+    const books = await Book.find().select('-__v')
+    res.json(books)
+  } catch (e) {
+    res.status(500).json(e)
   }
-}
-
-const library = {
-  book: []
-}
-
-router.get('/', (req, res) => {
-  const { book } = library
-  res.json(book)
 })
-router.get('/:id', (req, res) => {
-  const { book } = library
+
+router.get('/:id', async (req, res) => {
   const { id } = req.params
-  const idx = book.findIndex(el => el.id === id)
 
-  if (idx !== -1) {
-    res.json(book[idx])
-  } else {
-    res.status(404)
-    res.json({
-      'errCode': 404,
-      'errMsg': 'Страница не найдена!'
-    })
-  }
-})
-router.get('/:id/download', (req, res) => {
-  const { book } = library
-  const { id } = req.params
-  const idx = book.findIndex(el => el.id === id)
-
-  if (idx !== -1) {
-    res.download(path.join(__dirname, `../public/uploads/${ book[idx].fileBook }`))
-  } else {
-    res.status(404)
-    res.json({
-      'errCode': 404,
-      'errMsg': 'Страница не найдена!'
-    })
+  try {
+    const book = await Book.findById(id).select('-__v')
+    res.json(book)
+  } catch (e) {
+    res.status(404).json(e)
   }
 })
 
-router.post('/',  uploadMiddleware.single('fileBook'), (req, res) => {
-  const { book } = library
+router.post('/', async (req, res) => {
   const { title, description, authors, favorite, fileCover, fileName } = req.body
-  const fileBook = req.file.filename
 
-  const newBook = new Book(title, description, authors, favorite, fileCover, fileName, fileBook)
-  book.push(newBook)
+  const newBook = new Book({
+    title,
+    description,
+    authors,
+    favorite,
+    fileCover,
+    fileName
+  })
 
-  res.status(201)
-  res.json(newBook)
+  try {
+    await newBook.save()
+    res.json(newBook)
+  } catch (e) {
+    res.status(500).json(e)
+  }
 })
 
-router.put('/:id', (req, res) => {
-  const { book } = library
+router.put('/:id', async (req, res) => {
   const { id } = req.params
   const { title, description, authors, favorite, fileCover, fileName } = req.body
-  const idx = book.findIndex(el => el.id === id)
 
-  if (idx !== -1) {
-    book[idx] = {
-      ...book[idx],
-      title,
-      description,
-      authors,
-      favorite,
-      fileCover,
-      fileName
-    }
-    res.json(book[idx])
-  } else {
-    res.status(404)
-    res.json({
-      'errCode': 404,
-      'errMsg': 'Страница не найдена!'
-    })
+  try {
+    await Book.findByIdAndUpdate(id, { title, description, authors, favorite, fileCover, fileName })
+    res.redirect(`/api/books/${ id }`)
+  } catch (e) {
+    res.status(404).json(e)
   }
 })
 
-router.delete('/:id', (req, res) => {
-  const { book } = library
+router.delete('/:id', async (req, res) => {
   const { id } = req.params
-  const idx = book.findIndex(el => el.id === id)
 
-  if (idx !== -1) {
-    book.splice(idx, 1)
-    res.json('ok')
-  } else {
-    res.status(404)
-    res.json({
-      'errCode': 404,
-      'errMsg': 'Страница не найдена!'
-    })
+  try {
+    await Book.deleteOne({ _id: id })
+    res.json({ 'message': 'ok' })
+  } catch (e) {
+    res.status(500).json(e)
   }
 })
 
