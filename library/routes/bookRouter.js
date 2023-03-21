@@ -1,11 +1,11 @@
 const express = require('express')
-const uploadMiddleware = require('../middlewares/uploadMiddleware')
-const path = require('path')
 const { v4: uuid } = require('uuid')
 const router = express.Router()
+const axios = require('axios')
+let request = require('request')
 
 class Book {
-  constructor(title = '', description = '', authors = '', favorite = '', fileCover = '', fileName = '', fileBook = '', id = uuid()) {
+  constructor(title = '', description = '', authors = '', favorite = '', fileCover = '', fileName = '', id = uuid()) {
     this.id = id
     this.title = title
     this.description = description
@@ -13,7 +13,6 @@ class Book {
     this.favorite = favorite
     this.fileCover = fileCover
     this.fileName = fileName
-    this.fileBook = fileBook
   }
 }
 
@@ -25,13 +24,27 @@ router.get('/', (req, res) => {
   const { book } = library
   res.json(book)
 })
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   const { book } = library
   const { id } = req.params
   const idx = book.findIndex(el => el.id === id)
 
   if (idx !== -1) {
-    res.json(book[idx])
+    try {
+      let cnt = 0
+      await axios.post(`http://counter:3005/counter/${ id }/incr`)
+      await axios.get(`http://counter:3005/counter/${ id }`)
+        .then(function (res) {
+          cnt = +res.data.cnt
+        })
+      res.json({
+        book: book[idx],
+        cnt
+      })
+    } catch (e) {
+      res.json({ errmsg: 'Ошибка redis: ', err: e })
+    }
+
   } else {
     res.status(404)
     res.json({
@@ -40,28 +53,12 @@ router.get('/:id', (req, res) => {
     })
   }
 })
-router.get('/:id/download', (req, res) => {
-  const { book } = library
-  const { id } = req.params
-  const idx = book.findIndex(el => el.id === id)
 
-  if (idx !== -1) {
-    res.download(path.join(__dirname, `../public/uploads/${ book[idx].fileBook }`))
-  } else {
-    res.status(404)
-    res.json({
-      'errCode': 404,
-      'errMsg': 'Страница не найдена!'
-    })
-  }
-})
-
-router.post('/',  uploadMiddleware.single('fileBook'), (req, res) => {
+router.post('/',   (req, res) => {
   const { book } = library
   const { title, description, authors, favorite, fileCover, fileName } = req.body
-  const fileBook = req.file.filename
 
-  const newBook = new Book(title, description, authors, favorite, fileCover, fileName, fileBook)
+  const newBook = new Book(title, description, authors, favorite, fileCover, fileName)
   book.push(newBook)
 
   res.status(201)
