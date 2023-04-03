@@ -1,11 +1,9 @@
 const express = require('express')
-const uploadMiddleware = require('../middlewares/uploadMiddleware')
-const path = require('path')
-const { v4: uuid } = require('uuid')
 const router = express.Router()
+const { v4: uuid } = require('uuid')
 
 class Book {
-  constructor(title = '', description = '', authors = '', favorite = '', fileCover = '', fileName = '', fileBook = '', id = uuid()) {
+  constructor(title = '', description = '', authors = '', favorite = '', fileCover = '', fileName = '', id = uuid()) {
     this.id = id
     this.title = title
     this.description = description
@@ -13,7 +11,6 @@ class Book {
     this.favorite = favorite
     this.fileCover = fileCover
     this.fileName = fileName
-    this.fileBook = fileBook
   }
 }
 
@@ -67,7 +64,7 @@ router.get('/update/:id', (req, res) => {
   })
 })
 
-router.post('/create',  uploadMiddleware.single('fileBook'), (req, res) => {
+router.post('/create', (req, res) => {
   const { book } = library
   const { title, description, authors, favorite, fileCover, fileName } = req.body
 

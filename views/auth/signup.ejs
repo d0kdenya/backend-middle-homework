@@ -1,0 +1,23 @@
+<form action="/api/user/signup" method="post">
+    <h1>Регистрация</h1>
+    <div>
+        <label>Введите имя</label>
+        <input type="text" name="name" /><br />
+    </div>
+    <div>
+        <label>Введите почту</label>
+        <input type="text" name="email" /><br />
+    </div>
+    <div>
+        <label>Введите логин:</label>
+        <input type="text" name="username" /><br />
+    </div>
+    <div>
+        <label>Введите пароль:</label>
+        <input type="text" name="password" />
+    </div>
+    <div>
+        <input type="submit" name="Зарегистрироваться" /><br />
+    </div>
+    <p>Уже есть аккаунт? <a href="/api/user/login">вход</a></p>
+</form>
