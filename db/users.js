@@ -21,7 +21,7 @@ exports.findById = function (id, cb) {
     if (records[idx]) {
       cb(null, records[idx])
     } else {
-      cb(new Error('User ' + id + ' doesn\'t exist'))
+      cb(new Error(`User ${ id } doesn\'t exist`))
     }
   })
 }
@@ -33,6 +33,8 @@ exports.findByUsername = function (username, cb) {
       const record = records[i]
       if (record.username === username) {
         return cb(null, record)
+      } else {
+        cb(new Error(`${ username } doesn\'t exist`))
       }
     }
   })
