@@ -1,50 +1,19 @@
 const express = require('express')
+const socketIO = require('socket.io')
+const http = require('http')
 const indexRouter = require('./routes/indexRouter')
 const errorMiddleware = require('./middlewares/errorMiddleware')
 const session = require('express-session')
-const passport = require('passport')
-const LocalStrategy = require('passport-local').Strategy
-const db = require('./db')
-
-const verify = (username, password, done) => {
-  db.users.findByUsername(username, (err, user) => {
-    if (err) { return done(err) }
-    if (!user) { return done(null, false) }
-
-    if (!db.users.verifyPassword(user, password)) {
-      return done(null, false)
-    }
-    return done(null, user)
-  })
-}
-
-const options = {
-  usernameField: 'username',
-  passwordField: 'password'
-}
-
-passport.use('local', new LocalStrategy(options, verify))
-
-passport.serializeUser((user, cb) => {
-  cb(null, user.id)
-})
-
-passport.deserializeUser((id, cb) => {
-  db.users.findById(id, (err, user) => {
-    if (err) { return cb(err) }
-    cb(null, user)
-  })
-})
 
 const app = express()
+const server = http.Server(app)
+const io = socketIO(server)
 
 app.use(express.json())
 app.use(express.urlencoded())
 app.set('view engine', 'ejs')
 
 app.use(session({ secret: 'SECRET' }))
-app.use(passport.initialize())
-app.use(passport.session())
 
 app.use('/public', express.static(__dirname + '/public'))
 app.use('/api', indexRouter)
@@ -54,8 +23,24 @@ app.get('/', (req, res) => {
   })
 })
 
+io.on('connection', socket => {
+  const { id } = socket
+  const { roomName } = socket.handshake.query
+
+  socket.join(roomName)
+  socket.on('message-to-room', msg => {
+    msg.type = `roomName: ${roomName}`
+    socket.to(roomName).emit('message-to-room', msg)
+    socket.emit('message-to-room', msg)
+  })
+
+  socket.on('disconnect', () => {
+    console.log('disconnect: ', + id)
+  })
+})
+
 app.use(errorMiddleware)
 
 const PORT = process.env.PORT || 3000
 
-app.listen(PORT, () => console.log(`Server started on ${ PORT } port!`))
+server.listen(PORT, () => console.log(`Server started on ${ PORT } port!`))

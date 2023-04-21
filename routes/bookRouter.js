@@ -109,5 +109,4 @@ router.post('/delete/:id', (req, res) => {
   book.splice(idx, 1)
   res.redirect('/api/books')
 })
-
 module.exports = router

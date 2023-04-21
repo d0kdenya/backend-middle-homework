@@ -1,8 +1,0 @@
-<% if (!user) { %>
-    <h1>Главная</h1>
-    <p>Пожалуйста, <a href="/api/user/login">авторизируйтесь</a></p>
-    <p>Если нет аккаута, то <a href="/api/user/signup">зарегистрируйтесь</a></p>
-<% } else { %>
-    <p>Привет, <%= user.username %>.</p>
-    <p>Перейти в <a href="/api/user/profile">профиль</a>.</p>
-<% } %>
